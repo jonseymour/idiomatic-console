@@ -1,0 +1,15 @@
+{
+  "name": "idiomatic-stdio",
+  "description": "Redirect console.log and console.info to process.stderr",
+  "version": "0.0.0",
+  "homepage": "http://github.com/jonseymour/node-idiomatic-stdio",
+  "repository": "git://github.com/jonseymour/node-idoiomatic-stdio",
+  "author": "Jon Seymour <jon.seymour@gmail.com> (http://orwelliantremors.blogspot.com/)",
+  "main": "lib/idiomatic-stdio",
+  "directories": {
+    "lib": "lib"
+  },
+  "engines": {
+    "node": "*"
+  }
+}
