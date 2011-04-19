@@ -4,12 +4,11 @@ idiomatic-stdio - wrapper functions for console.log() and console.info() that pr
 
 DESCRIPTION
 ===========
-idiomatic-stdio provides a module that a top-level node.js module can use to explicitly enforce the idiom that diagnostic output
-is written to stderr. 
+idiomatic-stdio provides a module that a top-level node.js module can use to explicitly enforce the idiom that diagnostic output is written to stderr. 
 
-            require("idiomatic-stdio").rebind(console);
+            require("idiomatic-stdio").rebind();
 
-which rebinds the log and info functions of the supplied console object to alternative implementations below:
+which rebinds the log and info functions of the supplied console object to alternative implementations equivalent to below:
 
    	    console.log=(function() {
                var orig=console.log;
@@ -36,3 +35,23 @@ which rebinds the log and info functions of the supplied console object to alter
                  }
                };
              })()
+
+OTHER EXAMPLES
+==============
+
+	require("idiomatic-stdio").rebind(process.stderr, console);  
+
+Same as rebind(), but with target stream and console explicitly supplied.
+
+	require("idiomatic-stdio").unbind();                 
+
+Undoes the effect of exactly one rebind call.
+
+	require("idiomatic-stdio").with(function() { console.log("thunk!"); }, process.stderr); 
+
+Executes the thunk supplied as the first argument, while console.log and console.info are rebound to stderr.
+
+	require("idiomatic-stdio").with(function() { console.log("thunk!"); }, process.stdout); 
+
+Executes the thunk supplied as the first argument, while console.log and console.info are rebound to stdout.
+
