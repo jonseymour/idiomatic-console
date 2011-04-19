@@ -4,54 +4,47 @@ idiomatic-stdio - wrapper functions for console.log() and console.info() that pr
 
 DESCRIPTION
 ===========
-idiomatic-stdio provides a module that a top-level node.js module can use to explicitly enforce the idiom that diagnostic output is written to stderr. 
+idiomatic-stdio provides a module that a top-level node.js module can use to explicitly enforce the idiom that diagnostic output is written to stderr.
 
-            require("idiomatic-stdio").rebind();
+<pre>
+require("idiomatic-stdio").rebind();
+</pre>
 
-which rebinds the log and info functions of the supplied console object to alternative implementations equivalent to below:
+which rebinds the log and info functions of the console object with alternative implementations equivalent to below:
 
-   	    console.log=(function() {
-               var orig=console.log;
-               return function() {
-                 try {
-                   var tmp=process.stdout;
-                   process.stdout=process.stderr;
-                   orig.apply(console, arguments);
-                 } finally {
-                   process.stdout=tmp;
-                 }
-               };
-             })();
+<pre>
+console.log=(function(f) {
+  var orig=console[f];
+  return function() {
+    try {
+      var save=process.stdout;
+      process.stdout=process.stderr;
+      orig.apply(console, arguments);
+    } finally {
+      process.stdout=save;
+    }
+  };
+})('log');
+</pre>
 
-             console.info=(function() {
-               var orig=console.info;
-               return function() {
-                 try {
-                   var tmp=process.stdout;
-                   process.stdout=process.stderr;
-                   orig.apply(console, arguments);
-                 } finally {
-                   process.stdout=tmp;
-                 }
-               };
-             })()
+The basic idea is to use the standard implementations of the functions, but to rebind process.stdout to process.stderr for the duration of the console call (but no longer).
 
 OTHER EXAMPLES
 ==============
 
-	require("idiomatic-stdio").rebind(process.stderr, console);  
+	require("idiomatic-stdio").rebind(process.stderr, console);
 
 Same as rebind(), but with target stream and console explicitly supplied.
 
-	require("idiomatic-stdio").unbind();                 
+	require("idiomatic-stdio").unbind();
 
 Undoes the effect of exactly one rebind call.
 
-	require("idiomatic-stdio").with(function() { console.log("thunk!"); }, process.stderr); 
+	require("idiomatic-stdio").with(function() { console.log("thunk!"); }, process.stderr);
 
-Executes the thunk supplied as the first argument, while console.log and console.info are rebound to stderr.
+Executes the function supplied as the first argument, while console.log and console.info are rebound to stderr.
 
-	require("idiomatic-stdio").with(function() { console.log("thunk!"); }, process.stdout); 
+	require("idiomatic-stdio").with(function() { console.log("thunk!"); }, process.stdout);
 
-Executes the thunk supplied as the first argument, while console.log and console.info are rebound to stdout.
+Executes the function supplied as the first argument, while console.log and console.info are rebound to stdout.
 
