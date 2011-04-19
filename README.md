@@ -9,7 +9,7 @@ is written to stderr.
 
             require("idiomatic-stdio").rebind(console);
 
-which would rebind the log and info functions of the supplied console object to alternative implementations below:
+which rebinds the log and info functions of the supplied console object to alternative implementations below:
 
    	    console.log=(function() {
                var orig=console.log;
