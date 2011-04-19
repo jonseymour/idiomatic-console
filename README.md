@@ -1,6 +1,6 @@
 NAME
 ====
-idiomatic-stdio - a wrapper for node.js that preserves long standing unix idioms with regard to the correct target for diagnostic output.
+idiomatic-stdio - wrapper functions for console.log() and console.info() that preserve long standing unix idioms with regard to the correct target for diagnostic output.
 
 DESCRIPTION
 ===========
