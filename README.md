@@ -142,10 +142,12 @@ It relies on several assumptions. If any of these assumptions are violated by fu
 REVISIONS
 =========
 <dl>
-<dt>v0.0.0</dt>
-<dd>initial version</dd>
+<dt>v0.0.2</dt>
+<dd>fixed issue with nested binds. added a unit test.</dd>
 <dt>v0.0.1</dt>
 <dd>refactored, added .console object with a tweaked console implementation for local use</dd>
+<dt>v0.0.0</dt>
+<dd>initial version</dd>
 </dl>
 
 WEB
