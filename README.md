@@ -149,6 +149,8 @@ care about](https://github.com/joyent/node/pull/963#issuecomment-1041568) this i
 REVISIONS
 =========
 <dl>
+<dt>v0.0.4</dt>
+<dd>co-existence with --console-to-stderr patch</dd>
 <dt>v0.0.3</dt>
 <dd>include information about --console-to-stderr patch</dd>
 <dt>v0.0.2</dt>
