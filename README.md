@@ -139,6 +139,13 @@ It relies on several assumptions. If any of these assumptions are violated by fu
 * no asynchronous activity in the process derefrences process.stdout during a call to console.log() or console.info()
 * console.log, console.info and process.stdout may be freely re-assigned
 
+ALTERNATIVES
+============
+A [patch](https://github.com/jonseymour/node/tree/console-to-stderr-switch) is available for node itself which
+adds a --console-to-stderr switch that forces console.log() to write to process[process.\_console\_selector], where
+process.\_console\_selector is initialized to 'stderr'. Unfortunately, Ryan either [does not understand or does not
+care about](https://github.com/joyent/node/pull/963#issuecomment-1041568) this issue, so it won't be integrated into the node mainline.
+
 REVISIONS
 =========
 <dl>

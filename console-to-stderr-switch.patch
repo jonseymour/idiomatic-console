@@ -1,0 +1,97 @@
+From f5fd09898cda2b08e03b55f7829cbc9de253b782 Mon Sep 17 00:00:00 2001
+From: Jon Seymour <jon.seymour@gmail.com>
+Date: Fri, 22 Apr 2011 07:15:57 +1000
+Subject: [PATCH 1/2] Allow stream used by console to be selected by
+ process._console_selector.
+
+Existing behaviour is preserved unless --console-to-stderr has been specified
+on the command line.
+
+Signed-off-by: Jon Seymour <jon.seymour@gmail.com>
+---
+ lib/console.js |   12 ++++++++----
+ 1 files changed, 8 insertions(+), 4 deletions(-)
+
+diff --git a/lib/console.js b/lib/console.js
+index 54a4d81..308710a 100644
+--- a/lib/console.js
++++ b/lib/console.js
+@@ -56,12 +56,16 @@ function format(f) {
+   return str;
+ }
+ 
+-
+-exports.log = function() {
+-  process.stdout.write(format.apply(this, arguments) + '\n');
++if (!process._console_selector) {
++  exports.log = function() {
++    process.stdout.write(format.apply(this, arguments) + '\n');
++  };
++} else { 
++  exports.log = function() {
++    process[process._console_selector].write(format.apply(this, arguments) + '\n');
++  };
+ };
+ 
+-
+ exports.info = exports.log;
+ 
+ 
+-- 
+1.7.5.rc0.132.g4c19c
+
+
+From 2daeba06c0a6100e5ee7274ba35dd93fd1c34e25 Mon Sep 17 00:00:00 2001
+From: Jon Seymour <jon.seymour@gmail.com>
+Date: Fri, 22 Apr 2011 07:18:41 +1000
+Subject: [PATCH 2/2] Add support for --console-to-stderr switch.
+
+If present, forces console.log() and console.info() to use stderr for output,
+rather than current default of stdout.
+
+Purpose is to tolerate simultaneous use of common JavaScript idioms regarding
+use of console API and standard unix idioms regarding use of stdout vs. stderr.
+
+
+Signed-off-by: Jon Seymour <jon.seymour@gmail.com>
+---
+ src/node.cc |    9 +++++++++
+ 1 files changed, 9 insertions(+), 0 deletions(-)
+
+diff --git a/src/node.cc b/src/node.cc
+index f36cd73..4a8a141 100644
+--- a/src/node.cc
++++ b/src/node.cc
+@@ -104,6 +104,7 @@ static Persistent<String> emit_symbol;
+ 
+ 
+ static char *eval_string = NULL;
++static char *console_selector = NULL;
+ static int option_end_index = 0;
+ static bool use_debug_agent = false;
+ static bool debug_wait_connect = false;
+@@ -2037,6 +2038,11 @@ Handle<Object> SetupProcessObject(int argc, char *argv[]) {
+     process->Set(String::NewSymbol("_eval"), String::New(eval_string));
+   }
+ 
++  // --console-to-stderr
++  if (console_selector) {
++    process->Set(String::NewSymbol("_console_selector"), String::New(console_selector));
++  }
++
+   size_t size = 2*PATH_MAX;
+   char execPath[size];
+   if (Platform::GetExecutablePath(execPath, &size) != 0) {
+@@ -2221,6 +2227,9 @@ static void ParseArgs(int argc, char **argv) {
+       }
+       argv[i] = const_cast<char*>("");
+       eval_string = argv[++i];
++    } else if (strcmp(arg, "--console-to-stderr") == 0) {
++      console_selector="stderr";
++      argv[i] = const_cast<char*>("");
+     } else if (strcmp(arg, "--v8-options") == 0) {
+       argv[i] = const_cast<char*>("--help");
+     } else if (argv[i][0] != '-') {
+-- 
+1.7.5.rc0.132.g4c19c
+
