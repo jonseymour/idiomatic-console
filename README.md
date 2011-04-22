@@ -40,7 +40,7 @@ The bindings remain in place until the end of the process or until the programme
 
     require("idiomatic-stdio").unbind();
 
-Multiple calls to rebind are possible and each should have the expected effect. In particular, the console call will eventually be handled by the platforms implementation of console.log/info() but process.stdout be substituted according to the dictates of the most recent call to rebind.
+Multiple calls to rebind are possible and each should have the expected effect. In particular, the console call will eventually be handled by the platforms implementation of console.log/info() but with process.stdout substituted according to the dictates of the most recent call to rebind.
 
 Calls to unbind may not have the expected effect unless they are executed in the reverse order to the corresponding rebind() calls.
 
@@ -53,13 +53,9 @@ of a single function call.
         console.log("hello world - stderr version!");
     });
 
-Module authors who would like to use console.log() and console.info() in the manner intended by the designers of the console API can do by defining a local variable, console, as follows:
-
-    var console=require("idiomatic-stdio").console;
-
-This will only affect the module's own calls to the console API. Calls to other modules that use console.log() or console.info() will be unaffected.
-
-Of course, there are many node.js APIs that use console.log() with the expectation that it is bound to process.stdout. We can support these APIs by encapsulating them with a proxy that restores the expected behaviour. For example:
+Of course, there are many node.js APIs that use console.log() to write data with the expectation that console.log() is bound to 
+process.stdout. One way to support those modules is encapsulate their APIs with proxies that restore the platform
+bindings for the duration of calls into those APIs.
 
 <pre>
 var
@@ -76,33 +72,31 @@ This approach can also be used to deal with an API that uses console.log() and c
     var api=require('idiomatic-stdio").encapsulate(require('api-with-commonjs-diagnostic-idiom'), process.stderr);
     api.foobar(); // calls to console.log(), console.info() go to stderr.
 
+Note that the encapsulate method will not deal with console calls that happen during asynchronous callbacks scheduled 
+by the encapsulated API, so your mileage may vary.
+
+Module authors may prefer to leave default behaviour of node unchanged, but use a console API that has been
+tailored according to whether they want to use it to generate data or diagnostics.
+
+For example, if a module author wants to use the console API for diagnostics, she can write:
+
+    var console=require("idiomatic-stdio").console.options( {idiom: 'diagnostics'} );
+
+if she wants to use the API for data, according to the node idiom, she can use:
+
+    var console=require("idiomatic-stdio").console.options( {idiom: 'data'} );
+
+If no option is specified, then the currently in effect bindings will be used, whatever those are.
 
 EXAMPLES
 ========
-A selection of other examples is presented here.
-
-	require("idiomatic-stdio").rebind(process.stderr, console);
-
-Same as rebind(), but with target stream and console explicitly supplied.
-<hr/>
-
-	require("idiomatic-stdio").unbind();
-Undoes the effect of exactly one rebind call.
-<hr/>
-
-	require("idiomatic-stdio").with(function() { console.log("thunk!"); }, process.stderr);
-Executes the function supplied as the first argument, while console.log and console.info are rebound to stderr.
-<hr/>
-
-	require("idiomatic-stdio").with(function() { console.log("thunk!"); }, process.stdout);
-Executes the function supplied as the first argument, while console.log and console.info are rebound to stdout.
-<hr/>
-
-An executable example is provided in example/example.js. To run:
+An discursive executable example is provided in example/example.js. To run:
 <pre>
 npm install idiomatic-stdio
 npm explore idiomatic-stdio
-node example/example.js
+node example/example.js # to see all output
+node example/example.js >/dev/null # to see output that appears on stderr
+node example/example.js 2>/dev/null # to see output that appears on stdout
 exit # to return to where you were
 </pre>
 
