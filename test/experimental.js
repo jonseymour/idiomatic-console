@@ -1,17 +1,19 @@
 (function() {
-     function capture()
+     function capture(c)
      {
+	 c = c || console;
          return {
-             log: console.log,
-             info: console.info,
+             log: c.log,
+             info: c.info,
              stdout: process.stdout,
              stderr: process.stderr
          };
      }
 
-     function restore(save) {
-         console.log = save.log;
-         console.info = save.info;
+     function restore(save, c) {
+	 c = c || console;
+         c.log = save.log;
+         c.info = save.info;
          process.stdout = save.stdout;
          process.stderr = save.stderr;
      }
@@ -33,15 +35,16 @@
      idiomatic=require("../lib/idiomatic-stdio"),
      calls=[];
 
-     function wrap(func) {
+     function wrap(func, c) {
+         c = c || console;
          return function() {
-             var save=capture();
+             var save=capture(c);
              try {
-                 console.log = function() { calls.push( { member: 'log', stdout: process.stdout } ); };
-                 console.info = function() { calls.push( { member: 'info', stdout: process.stdout } ); };
+                 c.log = function() { calls.push( { member: 'log', stdout: process.stdout } ); };
+                 c.info = function() { calls.push( { member: 'info', stdout: process.stdout } ); };
                  func();
              } finally {
-                 restore(save);
+                 restore(save,c);
              }
          };
      };
@@ -101,6 +104,12 @@
 
          check(original, capture());
      });
-
-
+     exports["options"] =
+	wrap(function() {
+	     var
+	     console=idiomatic.console.options({idiom: 'diagnostics'}),
+	     original=capture(console);
+	     console.log("idiomatic diagnostics call");
+	     assert.strictEqual(original.stderr, calls.pop().stdout);
+	 }, idiomatic.console);
 })();
