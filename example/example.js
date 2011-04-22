@@ -31,3 +31,7 @@ idiomatic.encapsulate(api, process.stdout).foo();
 idiomatic.unbind();
 
 
+idiomatic
+    .console
+    .options({ idiom: 'diagnostics' })
+    .log('this is an example of a suggested idiom for specfifying how the API is to be used');
