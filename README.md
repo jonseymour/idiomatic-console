@@ -11,7 +11,7 @@ var
 
 // global rebinding
 var 
-  console=require("idiomatic-console").rebind("DIAGNOSTICS").push(); 
+  console=require("idiomatic-console").rebind("DIAGNOSTICS").lock(); 
 
 // rebinding globally for the duration of an immediate function call
 var 
@@ -28,7 +28,7 @@ var
 // globally redirecting console.log output to a file
 var 
   logfile=fs.open("some.log", "w"),
-  console=require("idiomatic-console").rebind({ log: logfile }).push();
+  console=require("idiomatic-console").rebind({ log: logfile }).lock();
 
 // rebinding globally while calling an specific api
 var 
@@ -48,9 +48,10 @@ Rebinding allows a module &/or top-level script to:
 * temporarily rebind the output of the global console API for the duration of an immediate function call (.with())
 * avoid, where possible, assignments to global variables like console.log, that might reduce composability of node modules
 
-Where necessary, it is also possible to permanently rebind all output from calls to the global console API to arbtirary output streams (.push()). 
-However, authors are encouraged to perform such permanent, global rebinding only in top-level scripts and modules, otherwise composability of the module
-will be compromised.
+Where necessary, it is also possible to permanently rebind all output from calls to the global console API to arbitrary output streams (.lock()). 
+However, authors are encouraged to perform such permanent, global rebinding only in top-level scripts and modules, otherwise composability of such modules
+will be compromised. Note also that at most one module can permanently replace the global console object at any given time - any other module that attempts
+to do so will receive an exception.
 
 HOW IT WORKS
 ============
@@ -58,8 +59,8 @@ The object returned by require("idiomatic-console") is a proxy for the global co
 by the global console API, the console API provided by idiomatic-console provides five additional functions:
 
 * rebind
-* push
-* pop
+* unbind
+* lock
 * with
 * encapsulate
 
@@ -68,71 +69,76 @@ rebind( { log: stream, info: stream, error: stream: warn: stream })
 Produces a new console API instance such that calls to the specified console API functions have their output redirected to the
 specified streams.
 
-This call does not change the current console API. Calls to this object will temporarily replace process.stderr and process.stdout for the
-duration of the calls to the console API but no longer.
+This call does not change the current global console object. Calls to this object will temporarily replace process.stderr and process.stdout for the
+duration of the calls to the console object but no longer.
 
-push()
+unbind()
+--------
+Returns the parent console of the receiver. Can be used to undo the effects of a previous rebind. For example:
+
+<pre>
+var console=require("idiomatic-console");
+console=console.rebind(console.DIAGNOSTIC);
+try {
+  // do something while the local console is rebound.
+} finally {
+  console=console.unbind();
+}
+</pre>
+
+lock()
 -----
-Pushes the current value of the global console onto a stack, then sets the global console variable to refer to the receiver.
+Permanently rebind the global console object to the receiver. At most one module can perform this operation. Any other
+module that attempts to will receive an exception. The intent of this behaviour is to discourage use of this method
+by anything other than the top level script or module.
 
-Unless this call is matched with a pop() this call will cause the identity of the global console API to be changed permanently.
+The result of a successful call to lock() is an unlock() function which can be used to restore the previous global console object. 
 
-In general, this call should only ever be called from top-level scripts and modules. Doing so from other modules will 
-inhibit the composability of those modules. If you need to temporarily change the global console use either 
-with() or encapsulate() according to the need.
+<pre>
+var unlock=console.lock();
 
-pop()
------
-Pops the previous global console API from the stack and assigns it to the global console variable. 
-This call must only be performed on the current global console variable.
+...
+
+unlock(); // release the lock on the global console object.
+</pre>
 
 with(func() {})
 ---------------
 Temporarily resets the global console variable to the receiver, executes the function, 
-then restores the original global console variable. Equivalent to:
-
-<pre>
-console.push();
-try {
-    func();
-} finally {
-    console.pop();
-}
-</pre>
+then restores the previous global console object.
 
 encapsulate(api)
 ----------------
-Produces a new API object in which all thet methods of the API are replaced with functions that do the equivalent of:
+Produces a new API object in which all the methods of the API are replaced with functions 
+that:
 
-<pre>
-console.push();
-try {	 
-    api.method.apply(api, arguments);
-} finally {
-    console.pop();
-}
-</pre>
+* push the current global console object onto a stack
+* replace the global console object with the receiver
+* invoke the method on the encapsulated API
+* pop the previously pushed console object from the stack
+* replace the global console object with the popped console object
 
 Note that the encapsulation performed by this function is reasonably simplistic - only the top-level methods
-are encapsulated. The results of methods returned from the API will not be encapsulated, nor will the 
-any deferred closures that are scheduled to execute asychronously with respect to the encapsulated method calls.
+are encapsulated. The results of methods returned from the API will not be encapsulated unless they are identical
+to the receiver. Currently, deferred closures that execute asynchronously with respect to an encapsulated
+method call will not be encapsulated, although this may change in future.
 
 MOTATIVATION
 ============
 The decision of node.js to bind the output of console.log() and console.info() to process.stdout brings 3 different idioms into conflict. 
-The idioms are explained and then sources of conflict are discussed.
+The idioms are briefly described and then sources of conflict are discussed.
 
 1. unix stdout is reserved for data and stderr for diagnostics
-2. on other JavaScript platforms, such as browsers console.log() and console.info() are typically used for diagnostic output
-3. node programs tend to use console.log() when the intent is to write data to process.stdout
+2. on other JavaScript platforms, such as browsers, console.log() and console.info() are typically used for diagnostic output
+3. node scripts and modules tend to use console.log() as a means of writing data to stdout.
 
-The conflict primarily arises because any JavaScript code written according to idiom #2 will tend to polute process.stdout with diagnostic info which will intefere
+The conflict primarily arises because any JavaScript code written according to idiom #2 will tend to polute process.stdout with diagnostic info and so intefere
 with any module that is writing data to stdout, following either idiom#1 or idiom#3.
 
-Attempts to fix this by globally redirecting the output of console.log() to process.stdout may interfere with modules that use console.log() 
+Attempts to fix this by globally redirecting the output of console.log() to process.stderr may interfere with modules that expect to use console.log() 
 to write to process.stdout, as per idiom#3.
 
-Discouraging module authors from using console.log() and console.info() for diagnostic info annoys authors who expect to be able to use the console
+Discouraging module authors from using console.log() and console.info() for diagnostic purposes annoys authors who expect to be able to use the console
 API in a manner more consistent with idiom#2.
 
 The intention of this module, then, is to provide an alternative console API with sufficient flexibility to allow module authors some control over where 
@@ -145,9 +151,24 @@ that would otherwise arise between modules that assign to shared global variable
 The module also provides module authors who are only interested in idiom#3 with a mechanism to allow them to easily redirect the output of
 console.log() and console.info() to other places, either temporarily for the duration of the node process.
 
+EXAMPLES
+========
+
+<dl>
+<dt><a href="/jonseymour/idiomatic-console/blob/master/example/with.js">examples/with.js</a></dt>
+<dd>demonstrates use of the with method</dd>
+<dt><a href="/jonseymour/idiomatic-console/blob/master/example/lock.js">examples/lock.js</a></dt>
+<dd>demonstrates use of the lock method</dd>
+<dt><a href="/jonseymour/idiomatic-console/blob/master/example/encapsulate.js">examples/encapsulate.js</a></dt>
+<dd>demonstrates use of the encapsulate method</dd>
+</dl>
+
+
 REVISIONS
 =========
 <dl>
+<dt>v0.0.8</dt>
+<dd>Remove push() and pop() methods. Add lock() method. Ensure bindings are inherited from parent</dd>
 <dt>v0.0.7</dt>
 <dd>Fix errors in repository and home page names.</dd>
 <dt>v0.0.6</dt>
