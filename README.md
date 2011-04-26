@@ -53,7 +53,7 @@ The idioms are explained and then sources of conflict are discussed.
 The conflict primarily arises because any JavaScript code written according to idiom #2 will tend to polute process.stdout with diagnostic info which will intefere
 with any module that is writing data to stdout, following either idiom#1 or idiom#3.
 
-Attempts to fix this by globally redirecting to the output console.log() to process.stdout may interfere with modules that use console.log() 
+Attempts to fix this by globally redirecting the output of console.log() to process.stdout may interfere with modules that use console.log() 
 to write to process.stdout, as per idiom#3.
 
 Discouraging module authors from using console.log() and console.info() for diagnostic info annoys authors who expect to be able to use the console
@@ -62,8 +62,8 @@ API in a manner more consistent with idiom#2.
 The intention of this module, then, is to provide an alternative console API with sufficient flexibility to allow module authors some control over where 
 their own diagnostic output goes and some control over where the diagnostic output of other modules goes. With this API, module authors that really want to
 use idiom#2 can do so, without interfering with modules that want to use idioms#1 or #3. Module authors that need to isolate themselves from the 
-authors that insist on following idiom#2 can do so, as required. Use of the private console API helps isolate rebinding decisions made by one author from
-decisions made by other authors.
+authors that insist on following idiom#2 using the global console API can do so, as required. Use of the private console API helps isolate 
+rebinding decisions made by one author from decisions made by other authors.
 
 The module also provides module authors who are only interested in idiom#3 with a mechanism to allow them to easily redirect the output of
 console.log() and console.info() to other places, either temporarily for the duration of the node process.
@@ -71,6 +71,8 @@ console.log() and console.info() to other places, either temporarily for the dur
 REVISIONS
 =========
 <dl>
+<dt>v0.0.7</dt>
+<dd>Renamed from idomatic-stdio to idiomatic-console. Refactored to provided a rebindable console.</dd>
 <dt>v0.0.6</dt>
 <dd>Renamed from idomatic-stdio to idiomatic-console. Refactored to provided a rebindable console.</dd>
 <dt>v0.0.5</dt>
@@ -89,11 +91,11 @@ REVISIONS
 
 WEB
 ===
-[http://github.com/jonseymour/node-idiomatic-console/](http://github.com/jonseymour/node-idiomatic-console/)
+[http://github.com/jonseymour/idiomatic-console/](http://github.com/jonseymour/idiomatic-console/)
 
 GIT
 ===
-git@github.com:jonseymour/node-idiomatic-console.git
+git@github.com:jonseymour/idiomatic-console.git
 
 AUTHOR
 ======
