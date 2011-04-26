@@ -4,28 +4,29 @@ idiomatic-console - provides replacements for the global console object that sup
 
 SYNOPSIS
 ========
-	var console=require("idiomatic-console").rebind("DIAGNOSTICS");        // local rebinding
+	// local rebinding
+	var console=require("idiomatic-console").rebind("DIAGNOSTICS");
 
-	var console=require("idiomatic-console").rebind("DIAGNOSTICS").push(); // global rebinding
+	// global rebinding
+	var console=require("idiomatic-console").rebind("DIAGNOSTICS").push(); 
 
+	// rebinding globally while calling an api
 	var console=require("idiommatic-console),
-	    api=console.rebind("DIAGNOSTICS").encapsulate(require("api"));     // rebinding globally while calling an api
+	    api=console.rebind("DIAGNOSTICS").encapsulate(require("api"));
 
-	var console=require("idiomatic-console"),                              // rebinding globally for the duration of an immediate function call
+        // rebinding globally for the duration of an immediate function call
+	var console=require("idiomatic-console"),
 	    api=require("api"),
 	    diagnostics=console.rebind(console.DIAGNOSTICS);
+	    diagnostics.with(function() { api.foo(); } );
 
-	    diagnostics.with(function() { api.foo(); } );                     
-                                   
+        // enabling a module to redirect its own console.log output to a file
         var logfile=fs.open("some.log", "w"),
-            console.require("idiomatic-console").rebind(                      // enabling a module to redirect its own console.log output to a file
-	    	{ log: logfile  }  
-	    ); 
+            console.require("idiomatic-console").rebind({ log: logfile  });
 
+	// globally redirecting console.log output to a file
         var logfile=fs.open("some.log", "w"),
-	    console.require("idiomatic-console").rebind(                       // globally redirecting console.log output to a file
-	    	{ log: logfile }  
-	    ).push(); 
+	    console.require("idiomatic-console").rebind({ log: logfile }).push();
 
 
 DESCRIPTION
