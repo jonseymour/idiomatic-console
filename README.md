@@ -22,11 +22,11 @@ SYNOPSIS
 
         // enabling a module to redirect its own console.log output to a file
         var logfile=fs.open("some.log", "w"),
-            console.require("idiomatic-console").rebind({ log: logfile  });
+            console=require("idiomatic-console").rebind({ log: logfile  });
 
-	// globally redirecting console.log output to a file
+        // globally redirecting console.log output to a file
         var logfile=fs.open("some.log", "w"),
-	    console.require("idiomatic-console").rebind({ log: logfile }).push();
+	    console=require("idiomatic-console").rebind({ log: logfile }).push();
 
 
 DESCRIPTION
