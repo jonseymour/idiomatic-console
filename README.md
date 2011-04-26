@@ -72,7 +72,7 @@ REVISIONS
 =========
 <dl>
 <dt>v0.0.7</dt>
-<dd>Renamed from idomatic-stdio to idiomatic-console. Refactored to provided a rebindable console.</dd>
+<dd>Fix errors in repository and home page names.</dd>
 <dt>v0.0.6</dt>
 <dd>Renamed from idomatic-stdio to idiomatic-console. Refactored to provided a rebindable console.</dd>
 <dt>v0.0.5</dt>
