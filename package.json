@@ -1,11 +1,11 @@
 {
-  "name": "idiomatic-stdio",
-  "description": "Redirect console.log and console.info to process.stderr",
-  "version": "0.0.5",
-  "homepage": "http://github.com/jonseymour/node-idiomatic-stdio",
-  "repository": "git://github.com/jonseymour/node-idoiomatic-stdio",
+  "name": "idiomatic-console",
+  "description": "Provide modules with a local console that can be rebound as required with targets for each stream",
+  "version": "0.0.6",
+  "homepage": "http://github.com/jonseymour/node-idiomatic-console",
+  "repository": "git://github.com/jonseymour/node-idoiomatic-console",
   "author": "Jon Seymour <jon.seymour@gmail.com> (http://orwelliantremors.blogspot.com/)",
-  "main": "lib/idiomatic-stdio",
+  "main": "lib/index",
   "directories": {
     "lib": "lib"
   },
