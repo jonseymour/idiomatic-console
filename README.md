@@ -64,13 +64,24 @@ by the global console API, the console API provided by idiomatic-console provide
 * with
 * encapsulate
 
-rebind( { log: stream, info: stream, error: stream: warn: stream })
+rebind( { log: stream, info: stream, error: stream: warn: stream } | bindings-name)
 -------------------------------------------------------------------
 Produces a new console API instance such that calls to the specified console API functions have their output redirected to the
 specified streams.
 
 This call does not change the current global console object. Calls to this object will temporarily replace process.stderr and process.stdout for the
 duration of the calls to the console object but no longer.
+
+The bindings can be specified as an object whose properties specify which streams are used for which console API method. ALternatively a bindings-name
+can be specified which must be the name of a binding property on the console object itself. This allows this idiom:
+<pre>
+var console=require("idiomatic-console").rebind("DIAGNOSTICS");
+</pre>
+instead of the more cumbersome:
+<pre>
+var console=require("idiomatic-console");
+console=console.rebind(console.DIAGNOSTICS);
+</pre>
 
 unbind()
 --------
@@ -123,8 +134,16 @@ are encapsulated. The results of methods returned from the API will not be encap
 to the receiver. Currently, deferred closures that execute asynchronously with respect to an encapsulated
 method call will not be encapsulated, although this may change in future.
 
-MOTATIVATION
-============
+DIAGNOSTICS
+-----------
+An object that contains bindings that ensure output of the console API is rebound to stderr.
+
+DATA
+----
+An object that contains bindings that represent the node defaults.
+
+MOTIVATION
+==========
 The decision of node.js to bind the output of console.log() and console.info() to process.stdout brings 3 different idioms into conflict. 
 The idioms are briefly described and then sources of conflict are discussed.
 
@@ -163,6 +182,25 @@ EXAMPLES
 <dd>demonstrates use of the encapsulate method</dd>
 </dl>
 
+RECOMMENDATIONS
+===============
+This section documents some recommendations about how to do I/O and diagnostics in node modules or JavaScript
+code intended to be used with node. Note that some of these recommendations specifically recommend
+against using idiomatic-console if possible, in favour of simpler solutions
+
+* avoid using idiom#2 with node modules
+* if you do use idiom#2 with node modules, use a private console object that respects idiom#1 to implement it
+* if you discover a node module that does use idiom#2 with the global console object, try to get that module fixed
+* avoid trying to manage the console output of other modules if possible
+* if you are forced to manage the console output of other modules, use the .with() or .encapsulate() provided by an idiomatic-console private console API.
+* restrict use of the idomatic-console lock() method to top-level modules and scripts
+* consider using process.stdout directly for data, instead of console.log().
+* never use console.info() for data.
+
+Ironically, idomatic-console works best in an eco-system in which most modules do not themselves use idiomatic-console. 
+The reason is that global interception of console API calls becomes more difficult when each module is bound to its own private console API and
+there are some uses cases for idiomatic-console where global interception is exactly what is needed. Future versions of idiomatic-console
+may provide a solution for this dilemma.
 
 REVISIONS
 =========
