@@ -2,8 +2,8 @@
   "name": "idiomatic-console",
   "description": "Provide modules with a local console that can be rebound as required with targets for each stream",
   "version": "0.0.6",
-  "homepage": "http://github.com/jonseymour/node-idiomatic-console",
-  "repository": "git://github.com/jonseymour/node-idoiomatic-console",
+  "homepage": "http://github.com/jonseymour/idiomatic-console",
+  "repository": "git://github.com/jonseymour/idiomatic-console",
   "author": "Jon Seymour <jon.seymour@gmail.com> (http://orwelliantremors.blogspot.com/)",
   "main": "lib/index",
   "directories": {
